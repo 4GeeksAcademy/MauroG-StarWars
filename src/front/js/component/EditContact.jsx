@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { Context } from "../store/appContext";
 
-export const AddEditContact = () => {
+export const EditContact = () => {
     const { store, actions } = useContext(Context)   
     const contact = store.currentContact;
     const [name, setName] = useState(contact.name);

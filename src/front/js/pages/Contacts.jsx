@@ -10,11 +10,11 @@ export const ContactsList = () => {
     const handleEdit = (contact) => {
         actions.setContact(contact),
         actions.setFormEditConctacTitle(),        
-        navigate('/addeditcontact')
+        navigate('/editcontact')
     };
     const handleAddContact = () =>{
         actions.setFormAddContactTitle(),
-        navigate('/addeditcontact')
+        navigate('/addcontact')
     };
 
     
