@@ -3,7 +3,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 	const user = 'MauroG';
 	/* const contactId = getStore().contacts.id */
 	/* console.log(getStore(store.contacts)); */
-	
+
 
 	return {
 		store: {
@@ -20,13 +20,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					initial: "white"
 				}
 			],
-			backgroundAdd: 'success',
+
 			contacts: [],
 			currentContact: {},
-			addOrEdit: null,
-			formAddContactTitle: (''),
-			formEditConctacTitle: (''),
-			
+
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -72,66 +69,65 @@ const getState = ({ getStore, getActions, setStore }) => {
 				const data = await response.json()
 				console.log(data);
 
-				setStore({contacts: data.contacts});
-							
+				setStore({ contacts: data.contacts });
+
 			},
 
-			addContact: async () => {
-				const url = 'https://playground.4geeks.com/contact';
-				const user = 'MauroG';
-				const bodyRequest = {
-					"name": "Contact Name",
-					"phone": "Contact Phone",
-					"email": "Contact Email",
-					"address": "Contact Address"
-				};
+			addContact: async (body) => {
+
 				const uri = `${url}/agendas/${user}/contacts`;
 				const options = {
 					method: 'POST',
 					headers: { 'Content-Type': 'appplication/json' },
-					body: JSON.stringify(bodyRequest)
+					body: JSON.stringify(body)
 				};
+				
 				const response = await fetch(uri, options);
-				if (!response.ok) {
-					console.log('Error: ', response.status, response.statusText)
-					return;
-				};
-				getUserAgenda();
+				// if (!response.ok) {
+				// 	console.log('Error: ', response.status, response.statusText)
+				// 	return;
+				// };
+				// getUserAgenda();
+				return response;
+
+
+
 			},
-			updateContact: async () => {
-				const uri = `${url}/agendas/${user}/${getStore().currentContact.id}`;
-				const bodyRequest = {
-					"name": "Contact Name",
-					"phone": "Contact Phone",
-					"email": "Contact Email",
-					"address": "Contact Address"
-				};
+			updateContact: async (bodyRequest) => {
+				const uri = `${url}/agendas/${user}/contacts/${bodyRequest.id}`;
+				const { id, ...body } = bodyRequest;
+
+
 				const options = {
 					method: 'PUT',
-					headers: {"Content-Type":"application/json"},
-					body: JSON.stringify(bodyRequest)
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body)
 				};
-				const response = await fetch(uri, options);					
-				if(!response.ok){
-					console.log('Error: ', response.status, response.statusText)
-					return;					
-				};
-				const data = response.json();
-				getUserAgenda();
+				const response = await fetch(uri, options);
+				// if (!response.ok) {
+				// 	console.log('Error: ', response.status, response.statusText)
+				// 	return;
+				// };
+				// getUserAgenda();
+				return response;
 			},
 			setContact: (contact) => {
-				setStore({currentContact: contact})
+				setStore({ currentContact: contact })
 			},
-			setFormAddContactTitle: () =>{
-				setStore({formAddContactTitle: ('New Contact')}),
-				setStore({addOrEdit: true})
+			deleteContact: async (requestId) => {
+				const uri = `${url}/agendas/${user}/contacts/${requestId}`;
+				const {id, ...body} = requestId;
+				const options = {
+					method: 'DELETE'
+				};
+				const response = await fetch(uri, options);
+				 if (!response.ok) {
+				 	console.log('Error: ', response.status, response.statusText)
+				 	return;
+				 };
+				 getUserAgenda();
 			},
-			setFormEditConctacTitle: () =>{
-				setStore({formEditConctacTitle: ('Edit Contact')}),
-				setStore({addOrEdit: false})
-			},
-			
-			
+
 		}
 	};
 };

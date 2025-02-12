@@ -7,15 +7,22 @@ export const ContactsList = () => {
                
     const navigate = useNavigate();
 
-    const handleEdit = (contact) => {
-        actions.setContact(contact),
-        actions.setFormEditConctacTitle(),        
-        navigate('/editcontact')
-    };
-    const handleAddContact = () =>{
-        actions.setFormAddContactTitle(),
+    const handleAddContact = (contact) =>{
+        actions.setContact(contact);
         navigate('/addcontact')
     };
+    const handleEdit = (contact) => {
+        actions.setContact(contact);
+        navigate('/editcontact')
+    };
+    const handleDelete = async (contact) => {
+        actions.deleteContact(contact.id);
+        actions.setContact(contact.filter((e)=> contact.id !== e.id));
+        actions.getUserAgenda();
+        
+    };
+   
+
 
     
     return (
@@ -40,9 +47,9 @@ export const ContactsList = () => {
                                                 <div className="d-flex justify-content-between">
                                                     <h5 className="card-title">{contact.name}</h5>                                                    
                                                     <div>
-                                                        <button onClick={() => handleEdit(contact)} className="btn btn-success me-2" type="button">
+                                                        <button onClick={() => handleEdit(contact)} className="btn btn-warning me-2" type="button">
                                                             <i className='fa fa-pencil'></i></button>
-                                                        <button className="btn btn-danger" type="button">
+                                                        <button onClick={() => handleDelete(contact)} className="btn btn-danger" type="button">
                                                             <i className='fas fa-trash-alt'></i></button>
                                                     </div>
                                                 </div>
