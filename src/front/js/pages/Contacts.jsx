@@ -16,16 +16,6 @@ export const ContactsList = () => {
         actions.setContact(contact);
         navigate('/editcontact')
     };
-    const handleDelete = async (id) => {
-
-        const response = await actions.deleteContact(id);
-        if (!response.ok) {
-            console.log('Error: ', response.status, response.statusText)
-            return;
-        };
-        actions.getUserAgenda();
-        navigate('/contacts')
-    };
 
     return (
 
@@ -34,7 +24,7 @@ export const ContactsList = () => {
                 <div className="d-flex justify-content-between">
                     <h1 className="text-light">Agenda Contact List</h1>
                     <button onClick={handleAddContact} className="btn-sm btn-primary" type="button">Add New Contact
-                    <i className='fa fa-user-plus ms-2 text-black'></i></button>
+                        <i className='fa fa-user-plus ms-2 text-black'></i></button>
                 </div>
                 <div className="d-flex justify-content-center p-4">
                     <ul className="col-10 list-group">
@@ -54,7 +44,7 @@ export const ContactsList = () => {
                                                             <i className='fa fa-pencil'></i></button>
                                                         <button className="btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" data-bs-placement="bottom" title="Delete Contact">
                                                             <i className='fas fa-trash-alt'></i></button>
-                                                        <ModalDelete contactId={contact.id} handleDelete={handleDelete} title={'Are You Sure?'} body={'If you delete this contact, you wont be able to recover it later.'} />
+                                                        <ModalDelete contactId={contact.id} title={'Are You Sure?'} body={'If you delete this contact, you wont be able to recover it later.'} />
                                                     </div>
                                                 </div>
                                                 <div className="d-flex">
