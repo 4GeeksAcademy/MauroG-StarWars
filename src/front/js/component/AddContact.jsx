@@ -45,7 +45,7 @@ export const AddContact = () => {
                     <label className=" form-label">{'Email '}
                         <span className="text-danger">*</span>
                     </label>
-                    <input onChange={handleChange} type="text" className="form-control" name="email" value={form.email} placeholder="Enter Email" />
+                    <input onChange={handleChange} type="email" className="form-control" name="email" value={form.email} placeholder="Enter Email" />
                 </div>
                 <div className="text-start mb-3 fs-5">
                     <label className=" form-label">{'Phone '}
