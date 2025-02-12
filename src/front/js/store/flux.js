@@ -91,25 +91,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 				return response;
 			},
 
-			updateContact: async (bodyRequest) => {
-				const uri = `${url}/agendas/${user}/contacts/${bodyRequest.id}`;
-				const { id, ...body } = bodyRequest;
-				
-				
-
+			updateContact: async (body, id) => {
+				/* const { id, ...body } = bodyRequest; */
+				/* const uri = `${url}/agendas/${user}/contacts/${bodyRequest.id}`; */
+				/* const uri = `${url}/agendas/${user}/contacts/${contactId}`; */
+				const uri = `${url}/agendas/${user}/contacts/${id}`;
 				const options = {
 					method: 'PUT',
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(body)
 				};
 				const response = await fetch(uri, options);
-				// if (!response.ok) {
-				// 	console.log('Error: ', response.status, response.statusText)
-				// 	return;
-				// };
-				// getUserAgenda();
+				if (!response.ok) {
+					console.log('Error: ', response.status, response.statusText)
+					return;
+				};
+				setStore({currentContact: {}})
+				getActions().getUserAgenda();
 								
-				return response;
+				/* return response; */
 				
 			},
 			
@@ -119,9 +119,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			deleteContact: async (requestId) => {
 				const uri = `${url}/agendas/${user}/contacts/${requestId}`;
-
-
-
 				const options = {
 					method: 'DELETE'
 				};

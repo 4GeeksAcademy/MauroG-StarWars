@@ -9,7 +9,7 @@ export const EditContact = () => {
 
     const [form, setForm] = useState(
         {
-            id: store.currentContact.id,
+            
             name: contact.name,
             phone: contact.phone,
             email: contact.email,
@@ -23,14 +23,15 @@ export const EditContact = () => {
     };
     const handleEditSubmit = async (event) => {
         event.preventDefault();
-        actions.setContact(form)
-        // actions.updateContact(form)
-        const resp = await actions.updateContact(form);
+        const id = store.currentContact.id;
+        /* actions.setContact(form) */
+        await actions.updateContact(form, id)
+        /* const resp = await actions.updateContact(form);
         if (!resp.ok) {
             console.log('Error: ', resp.status, resp.statusText)
             return;
         };
-        actions.getUserAgenda()
+        actions.getUserAgenda() */
         navigate("/contacts")
 
     };
