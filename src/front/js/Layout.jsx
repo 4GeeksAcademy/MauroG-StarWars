@@ -8,11 +8,14 @@ import { Navbar } from "./component/Navbar.jsx";
 import { Footer } from "./component/Footer.jsx";
 // Custom Page & Views
 import { Home } from "./pages/Home.jsx";
-import { Demo } from "./pages/demo";
-import { Single } from "./pages/single";
+
 import { ContactsList } from "./pages/Contacts.jsx";
 import { AddContact } from "./component/AddContact.jsx";
 import { EditContact } from "./component/EditContact.jsx";
+
+import { Blog } from "./pages/Blog.jsx"
+import { Detail } from "./pages/Detail.jsx"
+
 
 
 //create your first component
@@ -24,17 +27,19 @@ const Layout = () => {
     if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
 
     return (
-        <div>
+        <div className="bg-dark">
             <BrowserRouter basename={basename}>
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
                         <Route element={<Home />} path="/" />
                         <Route element={<ContactsList />} path="/contacts" />
-                        <Route element={<Demo />} path="/demo" />
-                        <Route element={<Single />} path="/single/:theid" />
                         <Route element={<AddContact />} path="/addcontact" />
                         <Route element={<EditContact />} path="/editcontact" />
+                        <Route element={<Blog />} path="/starships" />
+                        <Route element={<Blog />} path="/planets" />
+                        <Route element={<Blog />} path="/characters" />
+                        <Route element={<Detail />} path="/detail" />
                         <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
                     <Footer />
