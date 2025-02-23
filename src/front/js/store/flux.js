@@ -2,7 +2,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 	const url = 'https://playground.4geeks.com/contact';
 	const user = 'MauroG';
 	const starWarsUrl = 'https://www.swapi.tech/api';
-	
+
 
 	return {
 		store: {
@@ -24,11 +24,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 			planets: [],
 			characters: [],
 			starships: [],
-			/* favourites: [], */
 			detailData: {},
 			section: "",
-			favourites: ["item 1", "item 2", "item 3", "item 4", "item 5", "item 6"],
-
+			favourites: []
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -88,11 +86,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				};
 
 				const response = await fetch(uri, options);
-				// if (!response.ok) {
-				// 	console.log('Error: ', response.status, response.statusText)
-				// 	return;
-				// };
-				// getUserAgenda();
+
 				return response;
 			},
 
@@ -111,13 +105,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log('Error: ', response.status, response.statusText)
 					return;
 				};
-				setStore({currentContact: {}})
+				setStore({ currentContact: {} })
 				getActions().getUserAgenda();
-								
+
 				/* return response; */
-				
+
 			},
-			
+
 			setContact: (contact) => {
 				setStore({ currentContact: contact })
 			},
@@ -134,47 +128,53 @@ const getState = ({ getStore, getActions, setStore }) => {
 				 }; */
 				return response;
 			},
-			
+
 			getSectionData: async (section) => {
 				const uri = `${starWarsUrl}/${section}`
 				const options = {
 					method: 'GET'
 				};
 				const response = await fetch(uri, options);
-				if(!response.ok){
+				if (!response.ok) {
 					console.log('Error :', response.status, response.statusText)
 					return;
 				};
 				const data = await response.json();
-				console.log('esto es la data: ',data);
+				console.log('esto es la data: ', data);
 				section = section === 'people' ? 'characters' : section;
-				setStore({[section]: data.results});
+				setStore({ [section]: data.results });
 			},
 			setSection: (sectionSelected) => {
-				setStore({section: sectionSelected});
+				setStore({ section: sectionSelected });
 			},
 			getDetailData: async (uid) => {
 				const section = getStore().section === 'characters' ? 'people' : getStore().section;
 				const uri = `${starWarsUrl}/${section}/${uid}`
 				console.log(uri);
-				
+
 				const options = {
 					method: 'GET'
 				};
 				const response = await fetch(uri, options);
-				if(!response.ok){
+				if (!response.ok) {
 					console.log('Error :', response.status, response.statusText)
 					return;
 				};
 				const data = await response.json();
 				console.log("esto son los detalles: ", data);
-				
-				setStore({detailData: {...data.result.properties, uid:data.result.uid}})
+
+				setStore({ detailData: { ...data.result.properties, uid: data.result.uid } })
 			},
-			setFavourites: (item) => {	
-				///checkear si el value ya existe en el arry de favourites, si existe hago un filter y lo elimino y si no existe lo agrego al array [...favourites]
-				setStore({favourites: []})
-			},
+			setFavourites: (item) => {
+				const storeInFlux = getStore();
+				const exists = storeInFlux.favourites.some(favouriteItem => favouriteItem.uid === item.uid);
+				if (exists){
+					setStore({ favourites: storeInFlux.favourites.filter(favouriteItem => favouriteItem.uid !== item.uid)})
+				} else {
+					setStore({ favourites: [...storeInFlux.favourites, item] })
+				}
+
+			}, 
 
 		}
 	};

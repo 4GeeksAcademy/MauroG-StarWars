@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import { Link, useNavigate } from "react-router-dom";
+import "/workspaces/MauroG-StarWars/src/front/styles/index.css"
+
 
 export const Navbar = () => {
 	const { store, actions } = useContext(Context);
@@ -10,13 +12,14 @@ export const Navbar = () => {
 		navigate(`/${section}`)
 	};
 
-	const handleDeleteFavourite = (itemFavourite) => {
-		actions.setFavourites(store.favourites.filter((item) => itemFavourite.id !== item.id));
+	const handleDeleteFavourite = (itemFavourite, event) => {
+		event.stopPropagation();
+		actions.setFavourites(itemFavourite);
 	};
 
 	return (
 		<nav className="container-fluid bg-black navbar navbar-dark ">
-			<div className="container-fluid justify-content-between">
+			<div className="container-fluid justify-content-between ">
 				<Link to="/">
 					<span className="navbar-brand mb-0 h1">
 						<img height="55" src="https://starwars.chocobar.net/star-wars-logo.png" />
@@ -39,11 +42,11 @@ export const Navbar = () => {
 								{store.favourites.length}
 							</span>
 						</button>
-						<ul className="dropdown-menu dropdown-menu-dark">
+						<ul onClick={event => event.stopPropagation()} className="dropdown-menu dropdown-menu-dark">
 							{store.favourites.map((item) =>
-								<li  key={item.id} className="d-flex justify-content-between">
-									<a className="dropdown-item" href="#">{item}</a>
-									<button onClick={handleDeleteFavourite} className="btn btn-danger" type="button" >
+								<li  key={item.uid} className="d-flex justify-content-between">
+									<a className="dropdown-item" href="#">{item.name}</a>
+									<button onClick={(event) => handleDeleteFavourite(item, event)} className="btn btn-danger" type="button" >
 										<i className='fas fa-trash-alt'></i>
 									</button>
 								</li>
