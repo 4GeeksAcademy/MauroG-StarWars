@@ -33,7 +33,7 @@ class Products(db.Model):
     price = db.Column(db.Float, unique=False, nullable=False)
 
     def __repr__(self):
-        return f'<Product: {self.name}>'
+        return f'<Product: {self.id} - {self.name}>'
     
     def serialize(self):
         return{'id': self.id,
@@ -53,6 +53,9 @@ class Bills(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # Columna que guarda el Indice
     user_to = db.relationship("Users", foreign_keys=[user_id], backref=db.backref("bills_to", lazy="select"))  # Define la relación con la Clase y la Columna en cuestión. El backref crea automaticamente un atributo ("bills to") en el modelo/tabla relacionado (Users), (va a crear un indice (listado) con todas las facturas) 
 
+    def __repr__(self):
+        return f'<Bills: {self.id} - user: {self.user_id} >'
+
 
 class BillItems(db.Model):
     __tablename__ = "bill_items"  # Esto es necesario para que Flask interprete de esta manera el nombre y no lo haga de otra forma distinta
@@ -65,12 +68,17 @@ class BillItems(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"))
     product_to = db.relationship("Products", foreign_keys=[product_id], backref=db.backref("bill_items", lazy="select"))
 
+    def __repr__(self):
+        return f'<Bill: {self.bill_id} Items: {self.id} Product: {self.product_id}>'
+
 
 class Followers(db.Model):
     __tablename__ = "followers"
     id = db.Column(db.Integer, primary_key=True)
-    following_id = db.Column(db.Integer, unique=True, nullable=False)
-    follower_id = db.Column(db.Integer, unique=True, nullable=False)
+    following_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    following_to = db.relationship("Users", foreign_keys=[following_id], backref=db.backref("following_to", lazy="select"))
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    follower_to = db.relationship("Users", foreign_keys=[follower_id], backref=db.backref("follower_to", lazy="select"))
 
 
 class Posts(db.Model):
@@ -80,21 +88,25 @@ class Posts(db.Model):
     body = db.Column(db.String(120), unique=False, nullable=True)
     date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow())
     image_url = db.Column(db.String(120), unique=False, nullable=True)
-    user_id = db.Column(db.Integer, unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    user_to = db.relationship("Users", foreign_keys=[user_id], backref=db.backref("user_to", lazy="select"))
 
 
-class Comments(db.Model):
+class Coments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(120), unique=False, nullable=True)
-    user_id = db.Column(db.Integer, unique=True, nullable=False)
-    post_id = db.Column(db.Integer, unique=True, nullable=False)
+    user_coment_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    user_coment_to = db.relationship("Users", foreign_keys=[user_coment_id], backref=db.backref("user_coment_to", lazy="select"))
+    user_post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), unique=True, nullable=False)
+    user_post_to = db.relationship("Posts", foreign_keys=[user_post_id], backref=db.backref("user_post_to", lazy="select"))
 
 
 class Medias(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Enum("enum1", "enum2", "enum3", name="type"), unique=False, nullable=False)
     url = db.Column(db.String(120), unique=False, nullable=False)
-    post_id = db.Column(db.Integer, unique=True, nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), unique=True, nullable=False)
+    post_to = db.relationship("Posts", foreign_keys=[post_id], backref=db.backref("post_to", lazy="select"))
 
 
 class Planets(db.Model):
@@ -112,8 +124,10 @@ class Planets(db.Model):
 class PlanetFavourite(db.Model):
     __tablename__ = "planet_favourites"  # Esto es necesario para que Flask interprete de esta manera el nombre y no lo haga de otra forma distinta
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, unique=True, nullable=False)
-    planet_id = db.Column(db.Integer, unique=True, nullable=False)
+    planet_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    planet_favourite_user_to = db.relationship("Users", foreign_keys=[planet_favourite_user_id], backref=db.backref("planet_favourite_user_to", lazy="select"))
+    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), unique=True, nullable=False)
+    planet_to = db.relationship("Planets", foreign_keys=[planet_id], backref=db.backref("planets_to", lazy="select"))
 
 
 class Characters(db.Model):
@@ -131,5 +145,7 @@ class Characters(db.Model):
 class CharacterFavourites(db.Model):
     __tablename__ = "character_favourites"  # Esto es necesario para que Flask interprete de esta manera el nombre y no lo haga de otra forma distinta
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, unique=True, nullable=False)
-    character_id = db.Column(db.Integer, unique=True, nullable=False)
+    character_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    character_favourite_user_to = db.relationship("Users", foreign_keys=[character_favourite_user_id], backref=db.backref("character_favourite_user_to", lazy="select"))
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), unique=True, nullable=False)
+    character_to = db.relationship("Characters", foreign_keys=[character_id], backref=db.backref("character_to", lazy="select"))
