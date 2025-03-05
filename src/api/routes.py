@@ -42,7 +42,7 @@ def products():
         rows = db.session.execute(db.select(Products)).scalars()
         results = [row.serialize() for row in rows]
         response_body['results'] = results
-        response_body['message'] = f'Respuesta pata el motodo {request.method}'
+        response_body['message'] = f'Respuesta para el metodo {request.method}'
         return (response_body), 200
     if request.method == 'POST':
         data = request.json
@@ -52,7 +52,7 @@ def products():
                        price=data['price'])
         db.session.add(row)
         db.session.commit()
-        response_body['message'] = f'Respuesta pata el motodo {request.method}'
+        response_body['message'] = f'Respuesta para el metodo {request.method}'
         response_body['results'] = row.serialize()
         return (response_body), 200
 
@@ -103,27 +103,61 @@ def cohortes_students(cohort_id):
 
 
 # Quiero obtener todos los libros de un autor/escritor
-@api.route('/authors/<int: author_id>/books', methods=['GET'])
+""" @api.route('/authors/<int: author_id>/books', methods=['GET'])
 def autor_books(author_id):
     response_body = {}
     # logica para retornar esos datos
-    return response_body, 200
+    return response_body, 200 """
 
 
 # Quiero obtener todos los modelos de una marca de autos
-@api.route('/brands/<int: brand_id>/models', methods=['GET'])
+""" @api.route('/brands/<int: brand_id>/models', methods=['GET'])
 def brands_models(brand_id):
     response_body = {}
     # logica para retornar esos datos
-    return response_body, 200
+    return response_body, 200 
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400 """
 
 
 # Quiero obtener los pacientes de un servicio medico
-@api.route('/medical-services/<int: medical_services_id>/patients', methods=['GET'])
+""" @api.route('/medical-services/<int: medical_services_id>/patients', methods=['GET'])
 def medical_service_patients(medical_services_id):
     response_body = {}
     # logica para retornar esos datos
-    return response_body, 200
+    return response_body, 200 
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400 """
+
+
+@api.route('/jp-users', methods=['GET'])
+def jp_users():
+    response_body = {}
+    url = 'https://jsonplaceholder.typicode.com/users'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = 'Listado de usaurios'
+        response_body['resutls'] = data
+        return response_body, 200
+        response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/jp-users/<int:id>', methods=['GET'])
+def jp_users_id(id):
+    response_body = {}
+    url = f'https://jsonplaceholder.typicode.com/users/{id}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = f'Este es el usuario con el id:{id}'
+        response_body['resutls'] = data
+        return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
 
 
 @api.route('/characters', methods=['GET'])
@@ -137,3 +171,79 @@ def characters():
         response_body['message'] = 'Listado de personajes'
         response_body['resutls'] = data['results']
         return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/characters/<int:id>', methods=['GET'])
+def characters_id(id):
+    response_body = {}
+    url = f'https://swapi.tech/api/people/{id}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = f'Este es el personaje con el id:{id}'
+        response_body['resutls'] = data['result']['properties']
+        return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/planets', methods=['GET'])
+def planets():
+    response_body = {}
+    url = 'https://swapi.tech/api/planets'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = 'Listado de personajes'
+        response_body['resutls'] = data['results']
+        return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/planets/<int:id>', methods=['GET'])
+def planets_id(id):
+    response_body = {}
+    url = f'https://swapi.tech/api/planets/{id}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = f'Aqui el planeta con el id:{id}'
+        response_body['resutls'] = data['result']['properties']
+        return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/planets/<int:user_id>/favourite-planets', methods=['POST'])
+def favourite_planets(user_id):
+    response_body = {}
+    if request.method == 'POST':
+        data = request.json
+        print(data, type(data))
+        row = favourite_planets(planet_id = data.get('planet_id'),
+                                planet_favourite_user_id = data.get('planet_favourite_user_id'))
+        db.session.add(row)
+        db.session.commit()
+        response_body['message'] = f'Respuesta para el metodo {request.method}'
+        response_body['results'] = row.serialize()
+        return (response_body), 200
+    """ url = f'https://swapi.tech/api/planets/{id}'
+    response = requests.post(url) 
+     if requests.method == 200:
+        response_body['message'] = 'Planet added to favourites'
+        return response_body, 200 """
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+"""
+row = Products(name=data['name'],
+                       description=data.get('description', "n/a"),
+                       price=data['price'])
+"""
