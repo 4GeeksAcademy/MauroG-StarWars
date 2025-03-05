@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from api.models import db, Users, Products
+import requests
 
 
 api = Blueprint('api', __name__)
@@ -16,6 +17,7 @@ def handle_hello():
     response_body = {}
     response_body["message"] = "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
     return (response_body), 200
+
 
 @api.route('/users', methods=['GET'])
 def users():
@@ -55,7 +57,6 @@ def products():
         return (response_body), 200
 
 
-
 @api.route('/products/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def product(id):
     response_body = { }
@@ -91,3 +92,48 @@ def product(id):
         response_body['message'] = f'Se eliminó {request.method} del id: {id}'
         response_body['results'] = {}
         return (response_body), 200
+
+
+#Quiero obtener todos los estudiantes de la cohorte 93
+@api.route('/cohorts/<int:cohort_id>/students', methods=['GET'])
+def cohortes_students(cohort_id):
+    response_body = {}
+    # logica para retornar esos datos
+    return response_body, 200
+
+
+# Quiero obtener todos los libros de un autor/escritor
+@api.route('/authors/<int: author_id>/books', methods=['GET'])
+def autor_books(author_id):
+    response_body = {}
+    # logica para retornar esos datos
+    return response_body, 200
+
+
+# Quiero obtener todos los modelos de una marca de autos
+@api.route('/brands/<int: brand_id>/models', methods=['GET'])
+def brands_models(brand_id):
+    response_body = {}
+    # logica para retornar esos datos
+    return response_body, 200
+
+
+# Quiero obtener los pacientes de un servicio medico
+@api.route('/medical-services/<int: medical_services_id>/patients', methods=['GET'])
+def medical_service_patients(medical_services_id):
+    response_body = {}
+    # logica para retornar esos datos
+    return response_body, 200
+
+
+@api.route('/characters', methods=['GET'])
+def characters():
+    response_body = {}
+    url = 'https://swapi.tech/api/people'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        response_body['message'] = 'Listado de personajes'
+        response_body['resutls'] = data['results']
+        return response_body, 200
