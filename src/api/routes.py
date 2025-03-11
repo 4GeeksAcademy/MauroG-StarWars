@@ -4,9 +4,12 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, Users, Products
+from api.models import db, Users, Products, PlanetFavourite, CharacterFavourites
 import requests
-
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt
 
 api = Blueprint('api', __name__)
 CORS(api)  # Allow CORS requests to this API
@@ -35,6 +38,42 @@ def users():
     return (response_body), 200
 
 
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+@api.route("/login", methods=["POST"])
+def login():
+    response_body = {}
+    data = request.json
+    email = request.json.get("email", None)
+    password = data.get("password", None)
+    row = db.session.execute(db.select(Users).where(Users.email == email, Users.password == password, Users.is_active)).scalar() # Scalar devuelve un solo obvjeto/dictionary
+    # Si la consulta es exitosa. row tendra algo (por lo tanto es verdadero), sino devuelve algo devuelve 'None'
+    if not row:
+        response_body['message'] = "Wrong email or password"
+        return response_body, 401
+    user = row.serialize()
+    claims ={'user_id': user['id'],
+             'is_admin': user['is_admin']}
+    print(claims)
+    access_token = create_access_token(identity=email, additional_claims=claims)
+    response_body['message'] = 'User logged!'
+    response_body['access_token'] = access_token
+    return response_body, 200
+
+
+# Protect a route with jwt_required, which will kick out requests
+# without a valid JWT present.
+@api.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    response_body = {}
+    current_user = get_jwt_identity()
+    addiotional_claims = get_jwt()
+    response_body['message'] = f'User logged: {current_user} - {addiotional_claims}'
+    return response_body, 200
+
+
 @api.route('/products', methods=['GET', 'POST'])
 def products():
     response_body = { }
@@ -58,8 +97,9 @@ def products():
 
 
 @api.route('/products/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
 def product(id):
-    response_body = { }
+    response_body = {}
     row = db.session.execute(db.select(Products).where(Products.id == id)).scalar()
     if not row:
         response_body['message'] = f'El producto id {id} no existe'
@@ -71,6 +111,10 @@ def product(id):
         response_body['message'] = f'Respuesta pata el motodo {request.method} del id: {id}'
         return (response_body), 200
     if request.method == 'PUT':
+        additional_claims = get_jwt()
+        if not additional_claims['is_admin']:
+            response_body['message'] = 'Tu no eres admin'
+            return response_body, 401
         data = request.json
         row.name = data.get('name')
         # Aca solo modifico los datos que necesito actualizar, manteniendo el resto
@@ -95,11 +139,14 @@ def product(id):
 
 
 #Quiero obtener todos los estudiantes de la cohorte 93
-@api.route('/cohorts/<int:cohort_id>/students', methods=['GET'])
+""" @api.route('/cohorts/<int:cohort_id>/students', methods=['GET'])
 def cohortes_students(cohort_id):
     response_body = {}
     # logica para retornar esos datos
     return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400 
+"""
 
 
 # Quiero obtener todos los libros de un autor/escritor
@@ -107,7 +154,10 @@ def cohortes_students(cohort_id):
 def autor_books(author_id):
     response_body = {}
     # logica para retornar esos datos
-    return response_body, 200 """
+    return response_body, 200 
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+"""
 
 
 # Quiero obtener todos los modelos de una marca de autos
@@ -117,7 +167,8 @@ def brands_models(brand_id):
     # logica para retornar esos datos
     return response_body, 200 
     response_body['message'] = 'Algo salió mal'
-    return response_body, 400 """
+    return response_body, 400 
+"""
 
 
 # Quiero obtener los pacientes de un servicio medico
@@ -127,7 +178,8 @@ def medical_service_patients(medical_services_id):
     # logica para retornar esos datos
     return response_body, 200 
     response_body['message'] = 'Algo salió mal'
-    return response_body, 400 """
+    return response_body, 400 
+"""
 
 
 @api.route('/jp-users', methods=['GET'])
@@ -198,7 +250,7 @@ def planets():
     if response.status_code == 200:
         data = response.json()
         print(data)
-        response_body['message'] = 'Listado de personajes'
+        response_body['message'] = 'Listado de planetas'
         response_body['resutls'] = data['results']
         return response_body, 200
     response_body['message'] = 'Algo salió mal'
@@ -220,30 +272,99 @@ def planets_id(id):
     return response_body, 400
 
 
-@api.route('/planets/<int:user_id>/favourite-planets', methods=['POST'])
+@api.route('/users/<int:user_id>/favourite-planets', methods=['GET','POST'])
 def favourite_planets(user_id):
     response_body = {}
+    # Definir el metodo GET
+    # 1. Obtener la lista de todos los favoritos, con un scalars() y se lo asigno a la variable rows
+    # 2. Recorro rows
+      # 2.1 Obtengo el Planeta del planet_id, y se lo asigno a la variable planet
+      # 2.2 Voy creando una lista results donde agrego lo que obtengo del planet.serialize()
+    # 3 En response_body['results'] le asigno la lista results
+    # 4 Devuelvo el response_body
+    if request.method == 'GET':
+        rows = db.session.execute(db.select(PlanetFavourite).where(PlanetFavourite.planet_favourite_user_id == user_id)).scalars()  # Sacalars con "s" devuelve una lista con todo lo que tiene dentro
+        planets = [row.serialize() for row in rows]
+        response_body['results'] = planets
+        response_body["message"] = f"Listado de Planetas Favoritos del usuario {user_id}" 
+        return response_body, 200 
     if request.method == 'POST':
         data = request.json
-        print(data, type(data))
-        row = favourite_planets(planet_id = data.get('planet_id'),
-                                planet_favourite_user_id = data.get('planet_favourite_user_id'))
-        db.session.add(row)
-        db.session.commit()
+        planet_id = data.get('planet_id')
+        # Debo verificar que el favorito no exista
+        row = db.session.execute(db.select(PlanetFavourite).where(PlanetFavourite.planet_id == planet_id, PlanetFavourite.planet_favourite_user_id == user_id)).scalar()  # Scalar sin "s" devuelve un dictionary 
+        if row:
+            response_body['message'] = f'El planeta {planet_id} ya es un favorito para el usuario con el id: {user_id}'
+            return response_body, 400
+        favourite = PlanetFavourite(planet_id=planet_id,
+                                    planet_favourite_user_id=user_id)
+        db.session.add(favourite)
+        db.session.commit() 
         response_body['message'] = f'Respuesta para el metodo {request.method}'
-        response_body['results'] = row.serialize()
-        return (response_body), 200
-    """ url = f'https://swapi.tech/api/planets/{id}'
-    response = requests.post(url) 
-     if requests.method == 200:
-        response_body['message'] = 'Planet added to favourites'
-        return response_body, 200 """
+        response_body['results'] = favourite.serialize()
+        return response_body, 200
     response_body['message'] = 'Algo salió mal'
     return response_body, 400
 
 
-"""
-row = Products(name=data['name'],
-                       description=data.get('description', "n/a"),
-                       price=data['price'])
-"""
+@api.route('/users/<int:user_id>/favourite-characters', methods=['GET','POST'])
+def favourite_characters(user_id):
+    response_body = {}
+    # Definir el metodo GET
+    # 1. Obtener la lista de todos los favoritos, con un scalars() y se lo asigno a la variable rows
+    # 2. Recorro rows
+      # 2.1 Obtengo el Planeta del planet_id, y se lo asigno a la variable planet
+      # 2.2 Voy creando una lista results donde agrego lo que obtengo del planet.serialize()
+    # 3 En response_body['results'] le asigno la lista results
+    # 4 Devuelvo el response_body
+    if request.method == 'GET':
+        rows = db.session.execute(db.select(CharacterFavourites).where(CharacterFavourites.character_favourite_user_id == user_id)).scalars()  # Sacalars con "s" devuelve una lista con todo lo que tiene dentro
+        characters = [row.serialize() for row in rows]
+        response_body['results'] = characters
+        response_body["message"] = f"Listado de Personajes Favoritos del usuario {user_id}" 
+        return response_body, 200 
+    if request.method == 'POST':
+        data = request.json
+        character_id = data.get('character_id')
+        # Debo verificar que el favorito no exista
+        row = db.session.execute(db.select(CharacterFavourites).where(CharacterFavourites.character_id == character_id, CharacterFavourites.character_favourite_user_id == user_id)).scalar()  # Scalar sin "s" devuelve un dictionary 
+        if row:
+            response_body['message'] = f'El personaje {character_id} ya es un favorito para el usuario con el id: {user_id}'
+            return response_body, 400
+        favourite = CharacterFavourites(character_id=character_id,
+                                        character_favourite_user_id=user_id)
+        db.session.add(favourite)
+        db.session.commit() 
+        response_body['message'] = f'Respuesta para el metodo {request.method}'
+        response_body['results'] = favourite.serialize()
+        return response_body, 200
+    response_body['message'] = 'Algo salió mal'
+    return response_body, 400
+
+
+@api.route('/users/<int:user_id>/favourite-planets/<int:planet_id>', methods=['DELETE'])
+def delete_planet_favourite(planet_id, user_id):
+    response_body = {}
+    row = db.session.execute(db.select(PlanetFavourite).where(PlanetFavourite.planet_id == planet_id, PlanetFavourite.planet_favourite_user_id == user_id)).scalar()  # Scalar sin "s" devuelve un dictionary 
+    # Debo verificar que el favorito exista, sino existe entonces:
+    if not row:
+        response_body['message'] = f'El planeta {planet_id} no existe como favorito para el usuario con el id: {user_id}'
+        return response_body, 400 
+    db.session.delete(row)
+    db.session.commit() 
+    response_body['message'] = f'Se elimino correctamente el planeta con el id: {planet_id} - user: {user_id}'
+    return response_body, 200
+
+
+@api.route('/users/<int:user_id>/favourite-characters/<int:character_id>', methods=['DELETE'])
+def delete_character_favourite(character_id, user_id):
+    response_body = {}
+    row = db.session.execute(db.select(CharacterFavourites).where(CharacterFavourites.character_id == character_id, CharacterFavourites.character_favourite_user_id == user_id)).scalar()  # Scalar sin "s" devuelve un dictionary 
+    # Debo verificar que el favorito exista, sino existe entonces:
+    if not row:
+        response_body['message'] = f'El personaje {character_id} ya es un favorito para el usuario con el id: {user_id}'
+        return response_body, 400 
+    db.session.delete(row)
+    db.session.commit() 
+    response_body['message'] = f'Se elimino correctamente el personaje con el id: {character_id} - user: {user_id}'
+    return response_body, 200

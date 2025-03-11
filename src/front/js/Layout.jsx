@@ -15,6 +15,8 @@ import { EditContact } from "./component/EditContact.jsx";
 
 import { Blog } from "./pages/Blog.jsx"
 import { Detail } from "./pages/Detail.jsx"
+import { Login } from "./pages/LogIn.jsx";
+import { SignIn } from "./pages/SignIn.jsx";
 
 
 
@@ -24,7 +26,7 @@ const Layout = () => {
     // you can set the basename on the .env file located at the root of this project, E.g: BASENAME=/react-hello-webapp/
     const basename = process.env.BASENAME || "";
 
-    if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
+    if (!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL />;
 
     return (
         <div className="bg-dark">
@@ -40,6 +42,8 @@ const Layout = () => {
                         <Route element={<Blog />} path="/planets" />
                         <Route element={<Blog />} path="/characters" />
                         <Route element={<Detail />} path="/detail" />
+                        <Route element={<Login />} path="/login" />
+                        <Route element={<SignIn />} path="/signin" />
                         <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
                     <Footer />

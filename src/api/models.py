@@ -11,19 +11,22 @@ class Users(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    is_admin = db.Column(db.Boolean(), unique=False, nullable=False)
     first_name = db.Column(db.String(), unique=False, nullable=True)
     last_name = db.Column(db.String(), unique=False, nullable=True)
 
     def __repr__(self):
-        return f'<User: {self.email}>'
+        return f'<User: {self.id} - {self.email}>'
 
     def serialize(self):
         # Do not serialize the password, its a security breach
         return {'id': self.id,
                 'email': self.email,
                 'is_active': self.is_active,
+                'is_admin' : self.is_admin,
                 'first_name': self.first_name,
-                'last_name': self.last_name}
+                'last_name': self.last_name,
+                'planet_favourite': [row.serialize() for row in self.planet_favourite_user_to]}
     
 
 class Products(db.Model):
@@ -72,15 +75,16 @@ class BillItems(db.Model):
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
     bill_to = db.relationship("Bills", foreign_keys=[bill_id], backref=db.backref("bill_items", lazy="select"))
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"))
-    product_to = db.relationship("Products", foreign_keys=[product_id], backref=db.backref("bill_items", lazy="select"))
+    product_to = db.relationship("Products", foreign_keys=[product_id], backref=db.backref("product_to", lazy="select"))
 
     def __repr__(self):
-        return f'<Bill: {self.bill_id} Items: {self.id} Product: {self.product_id}>'
+        return f'<Bill: {self.bill_id} Items: {self.id} Product: {self.product_id} Quantity: {self.quantity}'
     
     def serialize(self):
         return{'id': self.id,
                'quantity': self.quantity,
                'price per unit': self.price_per_unit,
+               'product id': self.product_id,
                'bill id': self.bill_id,
                'bill to': self.bill_to}
 
@@ -168,7 +172,7 @@ class Planets(db.Model):
     terrain = db.Column(db.String(120), unique=False, nullable=True)
 
     def __repr__(self):
-        return f'<Planet: {self.name} - {self.id} >'
+        return f'<Planet: {self.id} - {self.name}  >'
     
     def serialize(self):
         return{'id': self.id,
@@ -178,18 +182,18 @@ class Planets(db.Model):
 class PlanetFavourite(db.Model):
     __tablename__ = "planet_favourites"  # Esto es necesario para que Flask interprete de esta manera el nombre y no lo haga de otra forma distinta
     id = db.Column(db.Integer, primary_key=True)
-    planet_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    planet_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     planet_favourite_user_to = db.relationship("Users", foreign_keys=[planet_favourite_user_id], backref=db.backref("planet_favourite_user_to", lazy="select"))
-    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), unique=True, nullable=False)
+    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"))
     planet_to = db.relationship("Planets", foreign_keys=[planet_id], backref=db.backref("planets_to", lazy="select"))
 
     def __repr__(self):
-        return f'<Planet Favourite: {self.planet_favourite_user_to} - {self.planet_id} >'
+        return f'<Planet Favourite: {self.planet_favourite_user_id} - {self.planet_id} >'
     
     def serialize(self):
         return{'id': self.id,
-               'planet id': self.planet_id,
-               'planet favourite': self.planet_favourite_user_to}
+               'planet_id': self.planet_id,
+               'planet_favourite_id': self.planet_favourite_user_id}
 
 
 class Characters(db.Model):
@@ -201,7 +205,7 @@ class Characters(db.Model):
     skin_color = db.Column(db.String(120), unique=False, nullable=True)
     eye_color = db.Column(db.String(120), unique=False, nullable=True)
     birth_year = db.Column(db.String(120), unique=False, nullable=True)
-    gender = db.Column(db.String(120), unique=False, nullable=False)
+    gender = db.Column(db.String(120), unique=False, nullable=True)
 
     def __repr__(self):
         return f'<Character: {self.name} - {self.id} >'
@@ -214,16 +218,16 @@ class Characters(db.Model):
 class CharacterFavourites(db.Model):
     __tablename__ = "character_favourites"  # Esto es necesario para que Flask interprete de esta manera el nombre y no lo haga de otra forma distinta
     id = db.Column(db.Integer, primary_key=True)
-    character_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    character_favourite_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     character_favourite_user_to = db.relationship("Users", foreign_keys=[character_favourite_user_id], backref=db.backref("character_favourite_user_to", lazy="select"))
-    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), unique=True, nullable=False)
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"))
     character_to = db.relationship("Characters", foreign_keys=[character_id], backref=db.backref("character_to", lazy="select"))
 
     def __repr__(self):
-        return f'<Character Favourite: {self.character_favourite_user_to} - {self.character_id} >'
+        return f'<Character Favourite: {self.character_favourite_user_id} - {self.character_id} >'
     
     def serialize(self):
         return{'id': self.id,
                'character id': self.character_id,
-               'character favourite': self.character_favourite_user_to}
+               'character favourite': self.character_favourite_user_id}
 

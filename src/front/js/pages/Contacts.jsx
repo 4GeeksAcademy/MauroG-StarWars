@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext.js";
 import { ModalDelete } from "../component/Modal.jsx";
-import { BlogHeader } from "../component/BlogHeader.jsx";
+
 
 export const ContactsList = () => {
     const { store, actions } = useContext(Context);
