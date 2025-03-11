@@ -26,6 +26,7 @@ export const Navbar = () => {
 					</span>
 				</Link>
 				<div className="d-flex">
+					
 					<span onClick={() => handleClick("planets")} className="btn btn-warning ms-1 me-1">Planets
 						<i className='fa fa-globe ms-2'></i>
 					</span>
@@ -42,9 +43,9 @@ export const Navbar = () => {
 								{store.favourites.length}
 							</span>
 						</button>
-						<ul onClick={event => event.stopPropagation()} className="dropdown-menu dropdown-menu-dark">
+						<ul className="dropdown-menu dropdown-menu-dark">
 							{store.favourites.map((item) =>
-								<li  key={item.uid} className="d-flex justify-content-between">
+								<li key={item.uid} className="d-flex justify-content-between">
 									<a className="dropdown-item" href="#">{item.name}</a>
 									<button onClick={(event) => handleDeleteFavourite(item, event)} className="btn btn-danger" type="button" >
 										<i className='fas fa-trash-alt'></i>
@@ -53,8 +54,10 @@ export const Navbar = () => {
 							)}
 						</ul>
 					</div>
+					<span onClick={() => navigate("/login")} className="btn btn-primary me-1">Login
+					</span>
 					<Link to="/contacts">
-						<span className="btn btn-primary">Contact List</span>
+						<span className="btn btn-black text-light">Contact List</span>
 					</Link>
 				</div>
 			</div>

@@ -46,7 +46,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 			changeColor: (index, color) => {
-				//get the store
+				
 				const store = getStore();
 
 				//we have to loop the entire demo array to look for the respective index
@@ -70,30 +70,21 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return;
 				};
 				const data = await response.json()
-				/* console.log(data); */
-
 				setStore({ contacts: data.contacts });
-
 			},
 
 			addContact: async (body) => {
-
 				const uri = `${url}/agendas/${user}/contacts`;
 				const options = {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(body)
 				};
-
 				const response = await fetch(uri, options);
-
 				return response;
 			},
 
 			updateContact: async (body, id) => {
-				/* const { id, ...body } = bodyRequest; */
-				/* const uri = `${url}/agendas/${user}/contacts/${bodyRequest.id}`; */
-				/* const uri = `${url}/agendas/${user}/contacts/${contactId}`; */
 				const uri = `${url}/agendas/${user}/contacts/${id}`;
 				const options = {
 					method: 'PUT',
@@ -107,9 +98,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				};
 				setStore({ currentContact: {} })
 				getActions().getUserAgenda();
-
-				/* return response; */
-
 			},
 
 			setContact: (contact) => {
