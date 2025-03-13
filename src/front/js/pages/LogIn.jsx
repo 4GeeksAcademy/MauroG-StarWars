@@ -19,7 +19,7 @@ export const Login = () => {
     const handleLogin = (event) => {
         event.preventDefault();
         const dataToSend = {email, password}
-        console.log(dataToSend);
+        
         actions.login(dataToSend);
         navigate('/');
     };

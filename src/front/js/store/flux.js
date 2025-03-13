@@ -50,22 +50,20 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			login : async (dataToSend) => {
 				const uri = `${process.env.BACKEND_URL}/api/login`;
-                console.log("soy la uri de login", uri);
+                
                 const options = {
                     method: 'POST',
-                    headers: {
-                        "Content-Type": "Application/json"
-                    },
+                    headers: {"Content-Type": "Application/json"},
                     body: JSON.stringify(dataToSend)
                 };
                 const response = await fetch (uri, options)
-                console.log("soy el response del login", response)
+                
                 if(!response.ok) {
                     console.log('Error login:', response.status, response.statusText)
                     return
                 }
                 const data = await response.json();
-                console.log('salio todo bien', data);
+                
                 setStore({
                     user: data.results,
                     isAdmin: data.results.is_admin,
@@ -74,7 +72,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 })
                 localStorage.setItem('token', data.access_token)
                 localStorage.setItem('user', JSON.stringify(data.results))
-                console.log("está logeado", getStore().isLogged, getStore().user)
+                
 			},
 			
 			logout: () => {
@@ -83,15 +81,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 				setStore({user: '',
 						 isLogged: false,
 						 isAdmin: false})
-				console.log("estoy out");
+				
 			},
 			register: async (dataToSend) => {
 				const uri = `${process.env.BACKEND_URL}/api/register`
 				const options = {
 					method:'POST',
-					headers:{
-						"Content-Type" : "Application/json"
-					},
+					headers:{'Content-Type' : 'Application/json'},
 					body: JSON.stringify(dataToSend)
 				}
 				const response = await fetch (uri, options)
@@ -105,19 +101,20 @@ const getState = ({ getStore, getActions, setStore }) => {
                     isAdmin: data.results.is_admin,
                     isLogged: true})
 				localStorage.setItem('token', data.access_token)
-				localStorage.setItem('user', json.stringify(data.results))
+				localStorage.setItem('user', JSON.stringify(data.results))
 			},
-			editProfile:async (body, id) => {
-				const uri = `${process.env.BACKEND_URL}/api/edit-profile/${id}`
+			editProfile:async (body) => {
+				const uri = `${process.env.BACKEND_URL}/api/edit-profile`
+				const token = localStorage.getItem('token');
 				const options = {
 					method: 'PUT',
 					headers:{
-						"Content-Type" : "Application/json"
+						'Content-Type' : 'Application/json',
+						'Authorization' : `Bearer ${token}`
 					},
 					body: JSON.stringify(body)
 				};
 				const response = await fetch(uri, options);
-				console.log("soy el response del edit profile: ", response)
 				if (!response.ok){
 					console.error("Error update: ", response.status, response.statusText)
 					return
@@ -125,17 +122,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 				const data = await response.json();
 				setStore({
 					user: data.results,
+					id: data.results.id,
 					firstName: data.results.first_name,
 					lastName: data.results.last_name,
 					email: data.results.email,
 					isAdmin: data.results.is_admin
 				})
-				console.log("Update ok:", data);
 				setStore({
 					user: data.results
 				})
-				localStorage.setItem('user', json.stringify(data.results))
-				console.log("Profile updated: ", getStore().user);
+				localStorage.setItem('user', JSON.stringify(data.results))
+				
 			},
 
 			changeColor: (index, color) => {
@@ -168,7 +165,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				const uri = `${url}/agendas/${user}/contacts`;
 				const options = {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: {'Content-Type': 'Application/json'},
 					body: JSON.stringify(body)
 				};
 				const response = await fetch(uri, options);
@@ -179,7 +176,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				const uri = `${url}/agendas/${user}/contacts/${id}`;
 				const options = {
 					method: 'PUT',
-					headers: { "Content-Type": "application/json" },
+					headers: { 'Content-Type': 'Application/json' },
 					body: JSON.stringify(body)
 				};
 				const response = await fetch(uri, options);
@@ -219,7 +216,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return;
 				};
 				const data = await response.json();
-				console.log('esto es la data: ', data);
 				section = section === 'people' ? 'characters' : section;
 				setStore({ [section]: data.results });
 			},
@@ -230,8 +226,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			getDetailData: async (uid) => {
 				const section = getStore().section === 'characters' ? 'people' : getStore().section;
 				const uri = `${starWarsUrl}/${section}/${uid}`
-				console.log(uri);
-
 				const options = {
 					method: 'GET'
 				};
@@ -241,8 +235,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return;
 				};
 				const data = await response.json();
-				console.log("esto son los detalles: ", data);
-
 				setStore({ detailData: { ...data.result.properties, uid: data.result.uid } })
 			},
 			setFavourites: (item) => {

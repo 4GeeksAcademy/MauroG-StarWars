@@ -353,9 +353,10 @@ def delete_character_favourite(character_id, user_id):
 def login():
     response_body = {}
     data = request.json
-    email = data.get("email", None)
-    password = data.get("password", None)
-    row = db.session.execute(db.select(Users).where(Users.email == email, Users.password == password, Users.is_active)).scalar() # Scalar devuelve un solo obvjeto/dictionary
+    print("esto es el data del login: ", data)
+    email = data.get("email")
+    password = data.get("password")
+    row = db.session.execute(db.select(Users).where(Users.email == email, Users.password == password)).scalar() # Scalar devuelve un solo obvjeto/dictionary
     # Si la consulta es exitosa. row tendra algo (por lo tanto es verdadero), sino devuelve algo devuelve 'None'
     if not row:
         response_body['message'] = "Wrong email or password"
@@ -395,23 +396,25 @@ def new_user():
     response_body['results'] = user
     return response_body, 200
     
-@api.route('/edit-profile/<int:user_id>', methods=['PUT'])
+@api.route('/edit-profile', methods=['PUT'])
 @jwt_required()
-def update_user(id):
+def update_user():
     response_body = {}
-    current_user_email = get_jwt_identity()
-    request.method == 'PUT'
+    token_data = get_jwt()
     data = request.json
-    row = db.session.execute(db.select(Users).where(Users.email == current_user_email)).scalar()
+    row = db.session.execute(db.select(Users).where(Users.id == token_data['user_id'])).scalar()
+    if not row:
+        response_body['message'] = 'Update not allowed'
+        return response_body, 401
     row.email = data.get('email', row.email)
-    row.first_name = data.get('first_name', row.first_name)
-    row.email = data.get('last_name', row.last_name)
-    print('soy el update: ', data)
-    """ 
-    db.session.add(row)
-    """
-    db.session.coomit()
-    response_body['message'] = f'Respuesta para el metodo {request.method} para el usario id: {id}'
-    response_body['results'] = row.serialize()
-    return (response_body), 200
+    row.first_name = data.get('firstName', row.first_name)
+    row.last_name = data.get('lastName', row.last_name)
+    if row.is_admin:
+        row.is_admin = data.get('isAdmin', row.is_admin)
+        row.is_active = data.get('isActive', row.is_active)
+    db.session.commit()
+    response_body['message'] = f'Respuesta para el metodo {request.method}'
+    response_body['results'] = row.serialize() 
+    print("este es el data: ", data)
+    return response_body, 200
 
