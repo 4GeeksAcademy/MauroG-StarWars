@@ -17,7 +17,8 @@ import { Blog } from "./pages/Blog.jsx"
 import { Detail } from "./pages/Detail.jsx"
 import { Login } from "./pages/LogIn.jsx";
 import { SignIn } from "./pages/SignIn.jsx";
-
+import { UserProfile } from "./pages/UserProfile.jsx";
+import { ProfileForm } from "./pages/ProfileForm.jsx";
 
 
 //create your first component
@@ -44,6 +45,8 @@ const Layout = () => {
                         <Route element={<Detail />} path="/detail" />
                         <Route element={<Login />} path="/login" />
                         <Route element={<SignIn />} path="/signin" />
+                        <Route element={<UserProfile />} path="/user-profile"/>
+                        <Route element={<ProfileForm />} path="/edit-profile"/>
                         <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
                     <Footer />

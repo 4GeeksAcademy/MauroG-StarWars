@@ -7,6 +7,13 @@ import "/workspaces/MauroG-StarWars/src/front/styles/index.css"
 export const Navbar = () => {
 	const { store, actions } = useContext(Context);
 	const navigate = useNavigate();
+
+	const handleLog = () => {
+		if (store.isLogged) {
+			actions.logout()
+		} else { navigate("/login") }
+	};
+
 	const handleClick = (section) => {
 		actions.setSection(section);
 		navigate(`/${section}`)
@@ -26,7 +33,7 @@ export const Navbar = () => {
 					</span>
 				</Link>
 				<div className="d-flex">
-					
+
 					<span onClick={() => handleClick("planets")} className="btn btn-warning ms-1 me-1">Planets
 						<i className='fa fa-globe ms-2'></i>
 					</span>
@@ -54,11 +61,22 @@ export const Navbar = () => {
 							)}
 						</ul>
 					</div>
-					<span onClick={() => navigate("/login")} className="btn btn-primary me-1">Login
-					</span>
+					{store.isLogged ?
+						(
+							<div>
+								<span onClick={handleLog} className="btn btn-primary me-1"> Logout</span>
+								<span onClick={() => navigate("/user-profile")} className="btn btn-primary me-1"> UserProfile</span>
+							</div>
+						)
+						:
+						(
+						<span onClick={() => navigate("/login")} className="btn btn-primary me-1"> Login</span>
+					)
+					}
 					<Link to="/contacts">
 						<span className="btn btn-black text-light">Contact List</span>
 					</Link>
+					
 				</div>
 			</div>
 		</nav>

@@ -25,8 +25,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 			characters: [],
 			starships: [],
 			detailData: {},
-			section: "",
-			favourites: []
+			section: "planets",
+			favourites: [],
+			user:{},
+			isLogged: false,
+			isAdmin: false,
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -45,20 +48,108 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-			changeColor: (index, color) => {
-				
-				const store = getStore();
+			login : async (dataToSend) => {
+				const uri = `${process.env.BACKEND_URL}/api/login`;
+                console.log("soy la uri de login", uri);
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "Application/json"
+                    },
+                    body: JSON.stringify(dataToSend)
+                };
+                const response = await fetch (uri, options)
+                console.log("soy el response del login", response)
+                if(!response.ok) {
+                    console.log('Error login:', response.status, response.statusText)
+                    return
+                }
+                const data = await response.json();
+                console.log('salio todo bien', data);
+                setStore({
+                    user: data.results,
+                    isAdmin: data.results.is_admin,
+                    isLogged: true,
+                    alert: {text: data.message, visible: true, background: 'success'},
+                })
+                localStorage.setItem('token', data.access_token)
+                localStorage.setItem('user', JSON.stringify(data.results))
+                console.log("está logeado", getStore().isLogged, getStore().user)
+			},
+			
+			logout: () => {
+				localStorage.removeItem('token')
+				localStorage.removeItem('user')
+				setStore({user: '',
+						 isLogged: false,
+						 isAdmin: false})
+				console.log("estoy out");
+			},
+			register: async (dataToSend) => {
+				const uri = `${process.env.BACKEND_URL}/api/register`
+				const options = {
+					method:'POST',
+					headers:{
+						"Content-Type" : "Application/json"
+					},
+					body: JSON.stringify(dataToSend)
+				}
+				const response = await fetch (uri, options)
+				if(!response.ok){
+					console.error('Algo salio mal', response.status, response.statusText)
+					return
+				}
+				const data = await response.json()
+				setStore({
+					user: data.results,
+                    isAdmin: data.results.is_admin,
+                    isLogged: true})
+				localStorage.setItem('token', data.access_token)
+				localStorage.setItem('user', json.stringify(data.results))
+			},
+			editProfile:async (body, id) => {
+				const uri = `${process.env.BACKEND_URL}/api/edit-profile/${id}`
+				const options = {
+					method: 'PUT',
+					headers:{
+						"Content-Type" : "Application/json"
+					},
+					body: JSON.stringify(body)
+				};
+				const response = await fetch(uri, options);
+				console.log("soy el response del edit profile: ", response)
+				if (!response.ok){
+					console.error("Error update: ", response.status, response.statusText)
+					return
+				};
+				const data = await response.json();
+				setStore({
+					user: data.results,
+					firstName: data.results.first_name,
+					lastName: data.results.last_name,
+					email: data.results.email,
+					isAdmin: data.results.is_admin
+				})
+				console.log("Update ok:", data);
+				setStore({
+					user: data.results
+				})
+				localStorage.setItem('user', json.stringify(data.results))
+				console.log("Profile updated: ", getStore().user);
+			},
 
+			changeColor: (index, color) => {
+				const store = getStore();
 				//we have to loop the entire demo array to look for the respective index
 				//and change its color
 				const demo = store.demo.map((elm, i) => {
 					if (i === index) elm.background = color;
 					return elm;
 				});
-
 				//reset the global store
 				setStore({ demo: demo });
 			},
+
 			getUserAgenda: async () => {
 				const uri = `${url}/agendas/${user}`;
 				const options = {
@@ -134,6 +225,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			setSection: (sectionSelected) => {
 				setStore({ section: sectionSelected });
+				localStorage.setItem( "section", sectionSelected)
 			},
 			getDetailData: async (uid) => {
 				const section = getStore().section === 'characters' ? 'people' : getStore().section;

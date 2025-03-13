@@ -38,29 +38,6 @@ def users():
     return (response_body), 200
 
 
-# Create a route to authenticate your users and return JWTs. The
-# create_access_token() function is used to actually generate the JWT.
-@api.route("/login", methods=["POST"])
-def login():
-    response_body = {}
-    data = request.json
-    email = request.json.get("email", None)
-    password = data.get("password", None)
-    row = db.session.execute(db.select(Users).where(Users.email == email, Users.password == password, Users.is_active)).scalar() # Scalar devuelve un solo obvjeto/dictionary
-    # Si la consulta es exitosa. row tendra algo (por lo tanto es verdadero), sino devuelve algo devuelve 'None'
-    if not row:
-        response_body['message'] = "Wrong email or password"
-        return response_body, 401
-    user = row.serialize()
-    claims ={'user_id': user['id'],
-             'is_admin': user['is_admin']}
-    print(claims)
-    access_token = create_access_token(identity=email, additional_claims=claims)
-    response_body['message'] = 'User logged!'
-    response_body['access_token'] = access_token
-    return response_body, 200
-
-
 # Protect a route with jwt_required, which will kick out requests
 # without a valid JWT present.
 @api.route("/protected", methods=["GET"])
@@ -368,3 +345,73 @@ def delete_character_favourite(character_id, user_id):
     db.session.commit() 
     response_body['message'] = f'Se elimino correctamente el personaje con el id: {character_id} - user: {user_id}'
     return response_body, 200
+
+
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+@api.route("/login", methods=["POST"])
+def login():
+    response_body = {}
+    data = request.json
+    email = data.get("email", None)
+    password = data.get("password", None)
+    row = db.session.execute(db.select(Users).where(Users.email == email, Users.password == password, Users.is_active)).scalar() # Scalar devuelve un solo obvjeto/dictionary
+    # Si la consulta es exitosa. row tendra algo (por lo tanto es verdadero), sino devuelve algo devuelve 'None'
+    if not row:
+        response_body['message'] = "Wrong email or password"
+        return response_body, 401
+    user = row.serialize()
+    claims ={'user_id': user['id'],
+             'first_name': user['first_name'],
+             'last_name': user['last_name'],
+             'email': user['email'],
+             'is_admin': user['is_admin']}
+    print("es el claims: ", claims)
+    print("user: ", user)
+    access_token = create_access_token(identity=email, additional_claims=claims)
+    response_body['message'] = 'User logged!'
+    response_body['access_token'] = access_token
+    response_body['results'] = user
+    return response_body, 200
+
+
+@api.route('/register', methods=['POST'])
+def new_user():
+    response_body = {}
+    data = request.json
+    print('soy el data: ', data)
+    
+    row = Users(first_name=data.get('first_name', ""), last_name=data.get('last_name', ""), email=data['email'], password=data['password'], is_admin=data.get('is_admin', False))
+    db.session.add(row)
+    db.session.commit() 
+    user = row.serialize()
+    claims ={'user_id': user['id'],
+             'is_admin': user['is_admin']}
+    print("es el claims: ", claims)
+    print("user: ", user)
+    access_token = create_access_token(identity=user["email"], additional_claims=claims)
+    response_body['message'] = 'User registered!'
+    response_body['access_token'] = access_token
+    response_body['results'] = user
+    return response_body, 200
+    
+@api.route('/edit-profile/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def update_user(id):
+    response_body = {}
+    current_user_email = get_jwt_identity()
+    request.method == 'PUT'
+    data = request.json
+    row = db.session.execute(db.select(Users).where(Users.email == current_user_email)).scalar()
+    row.email = data.get('email', row.email)
+    row.first_name = data.get('first_name', row.first_name)
+    row.email = data.get('last_name', row.last_name)
+    print('soy el update: ', data)
+    """ 
+    db.session.add(row)
+    """
+    db.session.coomit()
+    response_body['message'] = f'Respuesta para el metodo {request.method} para el usario id: {id}'
+    response_body['results'] = row.serialize()
+    return (response_body), 200
+
