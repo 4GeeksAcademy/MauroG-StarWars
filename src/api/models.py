@@ -8,9 +8,9 @@ db = SQLAlchemy()
 class Users(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
     is_admin = db.Column(db.Boolean(), unique=False, nullable=False)
     first_name = db.Column(db.String(), unique=False, nullable=True)
     last_name = db.Column(db.String(), unique=False, nullable=True)
@@ -27,11 +27,11 @@ class Users(db.Model):
                 'first_name': self.first_name,
                 'last_name': self.last_name,
                 'planet_favourite': [row.serialize() for row in self.planet_favourite_user_to]}
-    
+""" 'character_favourite': [row.serialize() for row in self.character_favourite_user_to] """
 
 class Products(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), unique=False, nullable=True)
     price = db.Column(db.Float, unique=False, nullable=False)
 
@@ -63,7 +63,7 @@ class Bills(db.Model):
         return{'id': self.id,
                'total': self.total,
                'status': self.status,
-               'user id': self.user_id}
+               'user_id': self.user_id}
 
 
 class BillItems(db.Model):
@@ -83,18 +83,18 @@ class BillItems(db.Model):
     def serialize(self):
         return{'id': self.id,
                'quantity': self.quantity,
-               'price per unit': self.price_per_unit,
+               'price_per_unit': self.price_per_unit,
                'product id': self.product_id,
-               'bill id': self.bill_id,
-               'bill to': self.bill_to}
+               'bill_id': self.bill_id,
+               'bill_to': self.bill_to}
 
 
 class Followers(db.Model):
     __tablename__ = "followers"
     id = db.Column(db.Integer, primary_key=True)
-    following_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    following_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     following_to = db.relationship("Users", foreign_keys=[following_id], backref=db.backref("following_to", lazy="select"))
-    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     follower_to = db.relationship("Users", foreign_keys=[follower_id], backref=db.backref("follower_to", lazy="select"))
 
     def __repr__(self):
@@ -113,7 +113,7 @@ class Posts(db.Model):
     body = db.Column(db.String(120), unique=False, nullable=True)
     date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow())
     image_url = db.Column(db.String(120), unique=False, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user_to = db.relationship("Users", foreign_keys=[user_id], backref=db.backref("user_to", lazy="select"))
 
     def __repr__(self):
@@ -123,15 +123,15 @@ class Posts(db.Model):
         return{'id': self.id,
                'title': self.title,
                'date': self.date,
-               'user to': self.user_to}
+               'user_to': self.user_to}
 
 
 class Coments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(120), unique=False, nullable=True)
-    user_coment_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    user_coment_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user_coment_to = db.relationship("Users", foreign_keys=[user_coment_id], backref=db.backref("user_coment_to", lazy="select"))
-    user_post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), unique=True, nullable=False)
+    user_post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
     user_post_to = db.relationship("Posts", foreign_keys=[user_post_id], backref=db.backref("user_post_to", lazy="select"))
 
     def __repr__(self):
@@ -140,8 +140,8 @@ class Coments(db.Model):
     def serialize(self):
         return{'id': self.id,
                'body': self.body,
-               'coment to': self.user_coment_to,
-               'user post': self.user_post_id}
+               'coment_to': self.user_coment_to,
+               'user_post': self.user_post_id}
 
 
 class Medias(db.Model):
@@ -157,7 +157,7 @@ class Medias(db.Model):
     def serialize(self):
         return{'id': self.id,
                'url': self.url,
-               'post to': self.post_to}
+               'post_to': self.post_to}
 
 
 class Planets(db.Model):
@@ -228,6 +228,6 @@ class CharacterFavourites(db.Model):
     
     def serialize(self):
         return{'id': self.id,
-               'character id': self.character_id,
-               'character favourite': self.character_favourite_user_id}
+               'character_id': self.character_id,
+               'character_favourite': self.character_favourite_user_id}
 
