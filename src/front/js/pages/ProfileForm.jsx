@@ -23,13 +23,11 @@ export const ProfileForm = () => {
         setForm({ ...form, [name]: name == "isAdmin" || name == "isActive" ? e.target.checked : value })
     };
 
-    const handleEditSubmit = async (event) => {
+    const handleEditSubmit = (event) => {
         event.preventDefault();
         const userId = store.user.id;
-        await actions.editProfile(form, id)
+        actions.editProfile(form)
         navigate("/user-profile")
-        console.log("este es el form: ", form);
-        console.log("este es el id: ", userId);
     };
 
     return (
@@ -54,10 +52,10 @@ export const ProfileForm = () => {
                     </label>
                     <input onChange={handleChange} type="email" className="form-control" name="email" value={form.email} placeholder="Enter Email" />
                 </div>
-                <div className="mb-3 form-check">
+                {/* <div className="mb-3 form-check">
                     <input name="isAdmin" onChange={handleChange} type="checkbox" className="form-check-input" checked={form.isAdmin} />
                     <label className="form-check-label" htmlFor="exampleCheck1">Is Admin</label>
-                </div>
+                </div> */}
                 <div className="mb-3 form-check">
                     <input name="isActive" onChange={handleChange} type="checkbox" className="form-check-input" checked={form.isActive} />
                     <label className="form-check-label" htmlFor="exampleCheck1">Is Active</label>
